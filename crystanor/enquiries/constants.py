@@ -1,0 +1,5 @@
+SUCCESSFULLY_FETCHED_ENQUIRY = "Successfully fetched all enquiry"
+SUCCESSFULLY_CREATED_ENQUIRY = "Successfully created enquiry"
+SUCCESSFULLY_UPDATED_ENQUIRY = "Successfully updated enquiry"
+SUCCESSFULLY_DELETED_ENQUIRY = "Successfully deleted enquiry"
+NO_DATA_FOUND = "Resource not found"
