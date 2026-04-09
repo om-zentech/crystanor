@@ -7,6 +7,7 @@ from .models import Enquiry
 from response_utils.custom_response import ApiResponse
 from .constants import (SUCCESSFULLY_CREATED_ENQUIRY, SUCCESSFULLY_FETCHED_ENQUIRY,
                         SUCCESSFULLY_DELETED_ENQUIRY, SUCCESSFULLY_UPDATED_ENQUIRY, NO_DATA_FOUND)
+from .services import EnquiryService, EmailService
 
 class EnquiryAPIView(APIView):
     """
@@ -37,12 +38,19 @@ class EnquiryAPIView(APIView):
 
     def post(self, request):
         """
-        Create a new enquiry
+        Create a new enquiry & send mail to admin and confirmation mail to user
         """
         serializer = EnquirySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         enquiry = EnquiryService.create_enquiry(serializer.validated_data)
+
+        try:
+            email_service = EmailService(enquiry)
+            email_service.send_admin_notification()
+            email_service.send_user_confirmation()
+        except Exception as e:
+            print("Email failed:", str(e))
 
         return ApiResponse(
             status=1,
