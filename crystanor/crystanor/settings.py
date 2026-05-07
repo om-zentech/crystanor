@@ -56,6 +56,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'https://crystanor.com',
+    'https://www.crystanor.com',
 ]
 
 CORS_ALLOWED_CREDENTIALS = True
@@ -111,7 +113,7 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 ADMIN_EMAIL = config("ADMIN_EMAIL")
 
 # Password validation
