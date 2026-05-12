@@ -1,10 +1,10 @@
 from django.shortcuts import get_object_or_404
 from django.core.mail import EmailMultiAlternatives
-from django.core.mail import send_mail
-from crystanor.settings import DEFAULT_FROM_EMAIL, ADMIN_EMAIL
 from enquiries.models import Enquiry
-from enquiries.constants import USER_EMAIL_CONTENT, ADMIN_EMAIL_CONTENT, THANKS_FOR_ENQUIRY
-from django.core.mail import EmailMultiAlternatives
+from enquiries.constants import (USER_EMAIL_CONTENT, ADMIN_EMAIL_CONTENT, USER_CONFIRMATION_SUBJECT, 
+                                FAIL_TO_SEND_ADMIN_NOTIFICATION, FAIL_TO_SEND_USER_NOTIFICATION, ADMIN_MAIL_SUBJECT)
+from crystanor.settings import DEFAULT_FROM_EMAIL, ADMIN_EMAIL
+from django.utils.html import strip_tags
 
 class EmailService:
 
@@ -12,21 +12,48 @@ class EmailService:
         self.enquiry = enquiry
 
     def send_admin_notification(self):
-        subject = f"New Enquiry from {self.enquiry.full_name}"
+        """
+        Send enquiry details to admin email
+        """
+        try:
+            subject = ADMIN_MAIL_SUBJECT.format(full_name=self.enquiry.full_name)
 
-        message = ADMIN_EMAIL_CONTENT.format(enq=self.enquiry)
+            html_content = ADMIN_EMAIL_CONTENT.format(enq=self.enquiry)
+            text_content = strip_tags(html_content)
 
-        send_mail(subject, message, DEFAULT_FROM_EMAIL, [ADMIN_EMAIL], fail_silently=False,)
+            email = EmailMultiAlternatives(subject=subject, body=text_content, from_email=DEFAULT_FROM_EMAIL, to=[ADMIN_EMAIL],)
+            email.attach_alternative(html_content, "text/html")
+            email.send(fail_silently=False)
+
+            return True
+
+        except Exception as exc:
+            print(FAIL_TO_SEND_ADMIN_NOTIFICATION.format(enquiry_id=self.enquiry.id))
+            print(str(exc))
+            return False
 
     def send_user_confirmation(self):
-        subject = "We received your enquiry"
+        """
+        Send confirmation email to user
+        """
+        try:
+            subject = USER_CONFIRMATION_SUBJECT
 
-        html_content = USER_EMAIL_CONTENT.format(enq_full_name=self.enquiry.full_name)
+            html_content = USER_EMAIL_CONTENT.format(enq_full_name=self.enquiry.full_name)
+            text_content = strip_tags(html_content)
+
+            email = EmailMultiAlternatives(subject=subject, body=text_content, from_email=DEFAULT_FROM_EMAIL, to=[self.enquiry.email])
+
+            email.attach_alternative(html_content, "text/html")
+            email.send(fail_silently=False)
+
+            return True
+
+        except Exception as exc:
+            print(FAIL_TO_SEND_USER_NOTIFICATION.format(email=self.enquiry.email))
+            print(str(exc))
+            return False
         
-        email = EmailMultiAlternatives(subject, THANKS_FOR_ENQUIRY, DEFAULT_FROM_EMAIL, [self.enquiry.email],)
-        email.attach_alternative(html_content, "text/html")
-        email.send()
-
 class EnquiryService:
 
     @staticmethod
